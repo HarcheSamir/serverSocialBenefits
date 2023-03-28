@@ -1,0 +1,110 @@
+
+const express = require('express');
+const mysql = require('mysql2/promise');
+const bcrypt = require('bcrypt');
+const saltRounds = 10;
+const nodemailer = require('nodemailer');
+const router=express.Router()
+const pool = mysql.createPool(
+  {host: "us-east.connect.psdb.cloud",
+  user: "2y771675on82aaznbw43",
+  password: "pscale_pw_1Fyqq2gc2AJ5GusU28C3VuyZoWMepfxe7n0z7n16bku",
+  database: "first",
+  ssl : {"rejectUnauthorized":true}});
+
+
+
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: "codeHive2223@gmail.com",
+      pass: "kdplvaiqnrufkouw",
+    },
+  });
+  
+  async function generateResetToken(email) {
+    const token = Math.random().toString(36).slice(2);
+    const expires = new Date(Date.now() + 3600000).toISOString().slice(0, 19).replace("T", " ");
+  
+    const [result, fields] = await pool.execute(
+      "INSERT INTO reset_tokens (email, token, expires) VALUES (?, ?, ?)",
+      [email, token, expires]
+    );
+  
+    if (result.affectedRows === 1) {
+      return token;
+    } else {
+      throw new Error("Failed to generate reset token");
+    }
+  }
+  
+  router.post("/forgotPassword", async (req, res) => {
+    try {
+      const { email } = req.body;
+      const token = await generateResetToken(email);
+  
+      const mailOptions = {
+        from: "codehive2223@gmail.com",
+        to: email,
+        subject: "Reset Your Password",
+        text: `Click this link to reset your password: http://localhost:3000/resetPassword?token=${token}&email=${email}`,
+      };
+  
+      await transporter.sendMail(mailOptions);
+  
+      res.status(200).json({ message: "Password reset email sent." });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Server error" });
+    }
+  });
+  
+
+  
+  router.post("/updatePassword", async (req, res) => {
+    try {
+      const { email, token, password } = req.body;
+      const connection = await pool.getConnection();
+  
+      const [result, fields] = await connection.execute(
+        "SELECT * FROM reset_tokens WHERE email = ? AND token = ? AND expires > NOW()",
+        [email, token]
+      );
+  
+      if (result.length !== 1) {
+        throw new Error("Invalid or expired token");
+      }
+  
+      const hashedPassword = await bcrypt.hash(password, saltRounds);
+  
+      const [updateResult, updateFields] = await connection.execute(
+        "UPDATE accounts SET password = ? WHERE email = ?",
+        [hashedPassword, email]
+      );
+  
+      if (updateResult.affectedRows !== 1) {
+        throw new Error("Failed to update password");
+      }
+  
+      const [deleteResult, deleteFields] = await connection.execute(
+        "DELETE FROM reset_tokens WHERE email = ? AND token = ?",
+        [email, token]
+      );
+  
+      if (deleteResult.affectedRows !== 1) {
+        console.warn("Failed to delete reset token");
+      }
+  
+      connection.release();
+  
+      res.status(200).json({ message: "Password updated successfully." });
+    } catch (err) {
+      console.error(err);
+      res.status(400).json({ error: err.message });
+    }
+  });
+  
+
+  module.exports = router;
+
+  
