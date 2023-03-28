@@ -17,8 +17,8 @@ const pool = mysql.createPool(
   const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
-      user: "codeHive2223@gmail.com",
-      pass: "kdplvaiqnrufkouw",
+      user: "socialBenefitsSba@gmail.com",
+      pass: "xjpsrmrcnovsqtcg",
     },
   });
   
@@ -44,7 +44,7 @@ const pool = mysql.createPool(
       const token = await generateResetToken(email);
   
       const mailOptions = {
-        from: "codehive2223@gmail.com",
+        from: "socialBenefitsSba@gmail.com",
         to: email,
         subject: "Reset Your Password",
         text: `Click this link to reset your password: http://localhost:3000/resetPassword?token=${token}&email=${email}`,
