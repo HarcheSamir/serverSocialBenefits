@@ -77,5 +77,21 @@ const pool = mysql.createPool(
     }
   });
 
-  
+  router.get('/searchEmployee', async (req, res) => {
+    try {
+      const query = req.query.for;
+      const connection = await pool.getConnection();
+      const sqlQuery = `
+        SELECT * FROM accounts
+        WHERE email LIKE '%${query}%'
+        OR name LIKE '%${query}%'
+      `;
+      const result = await connection.query(sqlQuery);
+      res.json(result[0]);
+      connection.release();
+    } catch (error) {
+      console.error(error);
+      res.status(500).send('Internal server error');
+    }
+  });
 module.exports = router;
