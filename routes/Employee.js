@@ -187,7 +187,7 @@ router.post('/token', async (req, res) => {
 
 
 
-
+/*
 router.post("/updateProfilePicture", upload.single("pic"), async (req, res) => {
   const file = req.file;
   const fileName = new Date().getTime().toString() + '-' + file.originalname;
@@ -216,7 +216,7 @@ router.post("/updateProfilePicture", upload.single("pic"), async (req, res) => {
   }
  
 });
-
+*/
 module.exports = router;
 
 
