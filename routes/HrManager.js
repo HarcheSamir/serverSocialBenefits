@@ -98,27 +98,19 @@ const pool = mysql.createPool(
 
   router.get('/accounts', async (req, res) => {
     try {
-      const { job, role, grade, marital_status } = req.query;
+      const { job, role, grade, marital_status , email } = req.query;
       const connection = await pool.getConnection();
   
-      let query = 'SELECT * FROM accounts WHERE ';
-      let conditions = [];
-  
-      if (job) {
-        conditions.push(`job = '${job}'`);
-      }
-  
-      if (role) {
-        conditions.push(`(role & ${role}) = ${role}`);
-      }
-  
-      if (grade) {
-        conditions.push(`grade = '${grade}'`);
-      }
-  
-      if (marital_status) {
-        conditions.push(`marital_status = '${marital_status}'`);
-      }
+      let query = 'SELECT * FROM accounts ';
+    
+    (job||role||grade||marital_status||email) && (query = 'SELECT * FROM accounts where ');
+    let conditions = []
+    email && conditions.push(`email = '${email}'`)
+    job && conditions.push(`job = '${job}'`)
+    role && conditions.push(` role = ${role}`)
+    grade && conditions.push(`grade = '${grade}'`)
+    marital_status && conditions.push(`marital_status = '${marital_status}'`)
+      
   
       query += conditions.join(' AND ');
   
@@ -132,5 +124,6 @@ const pool = mysql.createPool(
       res.status(500).send('Internal server error');
     }
   });
+
 
 module.exports = router;

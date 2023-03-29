@@ -46,4 +46,23 @@ router.post('/registerEmployee' , async (req, res) => {
     }
   });
   
+  router.post('/accounts/:email', async(req, res) => {
+    const email = req.params.email;
+    const updatedAccount = req.body;
+    console.log(updatedAccount)
+
+  try{
+    const connection = await pool.getConnection()
+    await  connection.query(
+      'UPDATE accounts SET ? WHERE email = ?',
+      [updatedAccount, email])
+      res.send(`Account with email ${email} updated successfully!`)
+  }
+  catch(error){
+    throw error 
+  }
+    
+  });
+
+
 module.exports = router;
