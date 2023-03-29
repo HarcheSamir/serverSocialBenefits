@@ -77,7 +77,7 @@ const pool = mysql.createPool(
     }
   });
 
-  router.get('/searchEmployee', async (req, res) => {
+  router.get('/searchAccounts', async (req, res) => {
     try {
       const query = req.query.for;
       const connection = await pool.getConnection();
@@ -94,4 +94,43 @@ const pool = mysql.createPool(
       res.status(500).send('Internal server error');
     }
   });
+
+
+  router.get('/accounts', async (req, res) => {
+    try {
+      const { job, role, grade, marital_status } = req.query;
+      const connection = await pool.getConnection();
+  
+      let query = 'SELECT * FROM accounts WHERE ';
+      let conditions = [];
+  
+      if (job) {
+        conditions.push(`job = '${job}'`);
+      }
+  
+      if (role) {
+        conditions.push(`(role & ${role}) = ${role}`);
+      }
+  
+      if (grade) {
+        conditions.push(`grade = '${grade}'`);
+      }
+  
+      if (marital_status) {
+        conditions.push(`marital_status = '${marital_status}'`);
+      }
+  
+      query += conditions.join(' AND ');
+  
+      const [rows] = await connection.query(query);
+  
+      connection.release();
+  
+      res.status(200).json(rows);
+    } catch (error) {
+      console.error(error);
+      res.status(500).send('Internal server error');
+    }
+  });
+
 module.exports = router;
