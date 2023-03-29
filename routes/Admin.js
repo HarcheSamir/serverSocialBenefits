@@ -11,7 +11,7 @@ const pool = mysql.createPool(
   database: "first",
   ssl : {"rejectUnauthorized":true}});
 
-
+/*
 router.post('/registerEmployee' , async (req, res) => {
     
     const { email, password , role} = req.body;
@@ -30,7 +30,7 @@ router.post('/registerEmployee' , async (req, res) => {
         }
     }
   })
-
+*/
 
   router.post('/updateRole', async (req, res) => {
     const { email, role } = req.body;
