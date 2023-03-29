@@ -186,8 +186,37 @@ router.post('/token', async (req, res) => {
 });
 
 
+/*
+router.post("/updateProfilePicture", upload.single("pic"), async (req, res) => {
+  const file = req.file;
+  const fileName = new Date().getTime().toString() + '-' + file.originalname;
+  const imageRef = ref(storage, fileName);
+  const metatype = { contentType: file.mimetype, name: fileName };
+  let downloadURL='';
+  try{
+      const connection = await pool.getConnection();
+      await connection.beginTransaction();
+      await uploadBytes(imageRef, file.buffer, metatype) ;
+      downloadURL = await getDownloadURL(imageRef);
+      const {email} = req.body
+      await connection.query('UPDATE accounts SET profile_image_url = ? WHERE email = ?', [downloadURL, email])
+      await connection.commit();
+      connection.release();
+      res.status(201).json({ message: "image changed successfully" });
 
+  }catch(error){
+      const connection = await pool.getConnection(); 
+      await connection.rollback();
 
+      const imageRef = ref(storage,downloadURL);
+      await deleteObject(imageRef);
+      connection.release();
+      res.status(500).json({ message: "Failed to change image" });
+  }
+ 
+});
+
+*/
 module.exports = router;
 
 
