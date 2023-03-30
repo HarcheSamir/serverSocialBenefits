@@ -60,7 +60,6 @@ router.post('/registerEmployee' , async (req, res) => {
   router.post('/accounts/:email', async(req, res) => {
     const email = req.params.email;
     const updatedAccount = req.body;
-    console.log(updatedAccount)
 
   try{
     const connection = await pool.getConnection()
@@ -92,17 +91,37 @@ router.post('/registerEmployee' , async (req, res) => {
     }
 });
 
+
+router.post('/benefits/:title',upload.none() , async(req, res) => {
+  const title = req.params.title;
+  const updatedAccount = req.body;
+
+try{
+  const connection = await pool.getConnection()
+  await  connection.query(
+    'UPDATE benefits SET ? WHERE title = ?',
+    [updatedAccount, title])
+    res.send(`the social benefit '${title}' updated successfully!`)
+}
+catch(error){
+  throw error 
+}
+  
+});
+
+
+
   router.get('/benefits', async (req, res) => {
   try {
-    const { chapter } = req.query;
+    const { chapter  , title } = req.query;
     const connection = await pool.getConnection();
 
     let query = 'SELECT * FROM benefits ';
   
-  (chapter) && (query = 'SELECT * FROM benefits where ');
+  (chapter || title) && (query = 'SELECT * FROM benefits where ');
   let conditions = []
   chapter && conditions.push(`chapter = '${chapter}'`)
- 
+  title && conditions.push(`title = '${title}'`)
     
 
     query += conditions.join(' AND ');

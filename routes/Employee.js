@@ -44,7 +44,7 @@ router.post("/upload", upload.array("pic"), async (req, res) => {
 });
 
 
-router.post("/uploadAndSend", upload.array("pic"), async (req, res) => {
+router.post("/uploadRequest", upload.array("pic"), async (req, res) => {
   const files = req.files;
   const downloadURLs = [];
   try{
@@ -61,9 +61,9 @@ router.post("/uploadAndSend", upload.array("pic"), async (req, res) => {
       downloadURLs.push(downloadURL);
     }
 // Insert a new request with the given status
-const { status } = req.body;
+const { status , requestedBy ,about ,description } = req.body;
 const createdAt = new Date();
-const requestResult = await connection.query("INSERT INTO requests (status ,createdAt) VALUES (?,?)", [status, createdAt]);
+const requestResult = await connection.query("INSERT INTO requests (status ,createdAt, requestedBy ,about ,description) VALUES (?,? ,? ,? ,?)", [status, createdAt , requestedBy,about , description ]);
 const requestId = requestResult[0].insertId;
 
 // Insert each proof with the newly created request ID and its corresponding image URL
