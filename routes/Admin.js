@@ -22,8 +22,8 @@ const pool = mysql.createPool(
   database: "first",
   ssl : {"rejectUnauthorized":true}});
 
-/*
-router.post('/registerEmployee' , async (req, res) => {
+
+/*router.post('/registerEmployee' , async (req, res) => {
     
     const { email, password , role} = req.body;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
@@ -75,7 +75,7 @@ router.post('/registerEmployee' , async (req, res) => {
   });
 
 
-  router.post('/addBenefit', upload.none() ,async (req, res) => {
+  router.post('/addSocialBenefit', upload.none() ,async (req, res) => {
     const { title, chapter, description, coverage, needed_proofs } = req.body;
     console.log(req.body)
     try {
@@ -92,7 +92,7 @@ router.post('/registerEmployee' , async (req, res) => {
 });
 
 
-router.post('/benefits/:title',upload.none() , async(req, res) => {
+router.post('/socialBenefits/:title',upload.none() , async(req, res) => {
   const title = req.params.title;
   const updatedAccount = req.body;
 
@@ -111,7 +111,7 @@ catch(error){
 
 
 
-  router.get('/benefits', async (req, res) => {
+  router.get('/socialBenefits', async (req, res) => {
   try {
     const { chapter  , title } = req.query;
     const connection = await pool.getConnection();

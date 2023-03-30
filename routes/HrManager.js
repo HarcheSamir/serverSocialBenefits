@@ -11,7 +11,7 @@ const pool = mysql.createPool(
   database: "first",
   ssl : {"rejectUnauthorized":true}});
 
-
+//get requests , paginated
   router.get('/getRequests', async (req, res) => {
     try {
       const connection = await pool.getConnection();
@@ -58,7 +58,7 @@ const pool = mysql.createPool(
       res.status(500).send('Server Error');
     }
   });
-  
+  //search among requests
   router.get('/search', async (req, res) => {
     try {
       const query = req.query.for;
@@ -76,7 +76,7 @@ const pool = mysql.createPool(
       res.status(500).send('Internal server error');
     }
   });
-
+//search among accounts
   router.get('/searchAccounts', async (req, res) => {
     try {
       const query = req.query.for;
@@ -95,7 +95,7 @@ const pool = mysql.createPool(
     }
   });
 
-
+//view and filter accounts
   router.get('/accounts', async (req, res) => {
     try {
       const { job, role, grade, marital_status , email } = req.query;
@@ -124,6 +124,85 @@ const pool = mysql.createPool(
       res.status(500).send('Internal server error');
     }
   });
+
+
+
+
+
+
+
+//get/filter requests , paginated 
+  router.get('/requests', async (req, res) => {
+    try {
+      const { id, requestedBy, reviewedBy, about, status } = req.query;
+
+      const connection = await pool.getConnection();
+
+
+
+      let queryy = 'SELECT COUNT(*) as total FROM requests ';
+      let query2 = 'SELECT * FROM requests ' ;
+    
+      (id || requestedBy || reviewedBy || about || status) && (queryy = 'SELECT COUNT(*) as total FROM requests where ') && (query2 = 'SELECT * FROM requests where ');
+      let conditions = []
+      id && conditions.push(`id = '${id}'`)
+      requestedBy && conditions.push(`requestedBy = '${requestedBy}'`)
+      reviewedBy && conditions.push(` reviewedBy = ${reviewedBy}`)
+      about && conditions.push(`about = '${about}'`)
+      status && conditions.push(`status = '${status}'`)
+        
+    
+        queryy += conditions.join(' AND ');
+        query2 += conditions.join(' AND ');
+
+      // Get total number of records
+      const [result] = await connection.query(queryy);
+     
+      const totalRecords = result[0].total;
+  
+      // Calculate pagination info
+      const page = Number(req.query.page) || 1;
+      const limit = Number(req.query.limit) || 10;
+      const totalPages = Math.ceil(totalRecords / limit);
+      const offset = (page - 1) * limit;
+  
+      // Get records for the requested page
+      const [records] = await connection.query( query2 + ' ORDER BY createdAt LIMIT ?, ?', [offset, limit]);
+  
+      // Calculate previous and next page numbers
+      let previousPage = null;
+      let nextPage = null;
+      if (page > 1) {
+        previousPage = page - 1;
+      }
+      if (page < totalPages) {
+        nextPage = page + 1;
+      }
+  
+      const infos = {
+        previous: previousPage,
+        next: nextPage,
+        totalPages,
+        currentPage: page,
+        totalRecords : totalRecords
+      };
+  
+      res.json({
+        infos,
+        records,
+      });
+  
+      connection.release();
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).send('Server Error');
+    }
+  });
+
+
+
+
+
 
 
 module.exports = router;

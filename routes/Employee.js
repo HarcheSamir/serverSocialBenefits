@@ -22,7 +22,7 @@ const pool = mysql.createPool(
   ssl : {"rejectUnauthorized":true}});
 
 
-  //upload pics
+  //not needed , 
 router.post("/upload", upload.array("pic"), async (req, res) => {
 
   const files = req.files;
@@ -98,7 +98,7 @@ res.status(500).json({ message: "Failed to create request" });
 })
 
 
-  //send Requests
+  //not needed
 router.post('/sendRequests', async (req, res, next) => {
     const { proofs, status } = req.body;
   
@@ -138,7 +138,7 @@ router.post('/sendRequests', async (req, res, next) => {
 
 
 
-
+//delete request
 router.delete('/requests/:id', async (req, res) => {
   try {
     const connection = await pool.getConnection();
@@ -174,7 +174,7 @@ router.delete('/requests/:id', async (req, res) => {
 
 
 
-
+//verify the token , to secure routes
 router.post('/token', async (req, res) => {
   const {token} = req.body
   try {
@@ -186,7 +186,7 @@ router.post('/token', async (req, res) => {
 });
 
 
-
+//update profile picture , that's all the employee can modify 
 router.post("/updateProfilePicture", upload.single("pic"), async (req, res) => {
   const file = req.file;
   const fileName = new Date().getTime().toString() + '-' + file.originalname;
@@ -217,7 +217,7 @@ router.post("/updateProfilePicture", upload.single("pic"), async (req, res) => {
 });
 
 
-
+//view announcements
 router.get('/announcements', async (req, res) => {
   try {
     
