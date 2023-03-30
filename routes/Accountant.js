@@ -48,7 +48,7 @@ router.post("/uploadTransaction", upload.single("pic"), async (req, res) => {
         const imageRef = ref(storage,downloadURL);
         await deleteObject(imageRef);
         connection.release();
-        res.status(500).json({ message: "Failed to create request" });
+        res.status(500).json({ message: "Failed to create transaction" });
     }
    
   });

@@ -3,6 +3,17 @@ const express = require('express');
 const mysql = require('mysql2/promise');
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
+const multer = require('multer');
+const {
+  ref,
+  uploadBytes,
+  listAll,
+  deleteObject,
+  getDownloadURL
+} = require("firebase/storage");
+const storage = require("../firebase");
+const memoStorage = multer.memoryStorage();
+const upload = multer({ memoStorage });
 const router=express.Router()
 const pool = mysql.createPool(
   {host: "us-east.connect.psdb.cloud",
@@ -63,6 +74,78 @@ router.post('/registerEmployee' , async (req, res) => {
   }
     
   });
+
+
+  router.post('/addBenefit', upload.none() ,async (req, res) => {
+    const { title, chapter, description, coverage, needed_proofs } = req.body;
+    console.log(req.body)
+    try {
+        const connection = await pool.getConnection();
+        const query = 'INSERT INTO benefits (title, chapter, description, coverage, needed_proofs) VALUES (?, ?, ?, ?, ?)';
+        const values = [title, chapter, description, coverage, needed_proofs];
+        const [result] = await connection.execute(query, values);
+        connection.release();
+        res.status(200).send({ message: 'Row added successfully!' });
+    } catch (error) {
+        console.log(error);
+        res.status(500).send({ error: 'An error occurred while adding a row to the benefits table.' });
+    }
+});
+
+  router.get('/benefits', async (req, res) => {
+  try {
+    const { chapter } = req.query;
+    const connection = await pool.getConnection();
+
+    let query = 'SELECT * FROM benefits ';
+  
+  (chapter) && (query = 'SELECT * FROM benefits where ');
+  let conditions = []
+  chapter && conditions.push(`chapter = '${chapter}'`)
+ 
+    
+
+    query += conditions.join(' AND ');
+
+    const [rows] = await connection.query(query);
+
+    connection.release();
+
+    res.status(200).json(rows);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Internal server error');
+  }
+});
+
+router.post("/uploadAnnouncement", upload.single("pic"), async (req, res) => {
+  const file = req.file;
+  const fileName = new Date().getTime().toString() + '-' + file.originalname;
+  const imageRef = ref(storage, fileName);
+  const metatype = { contentType: file.mimetype, name: fileName };
+  let downloadURL='';
+  try{
+      const connection = await pool.getConnection();
+      await connection.beginTransaction();
+      await uploadBytes(imageRef, file.buffer, metatype) ;
+      downloadURL = await getDownloadURL(imageRef);
+      const {title, description} = req.body
+      await connection.query("INSERT INTO announcements (title, cover_url ,description) VALUES (?, ?, ?)", [title, downloadURL ,description])
+      await connection.commit();
+      connection.release();
+      res.status(201).json({ message:"announcement created successfully" });
+
+  }catch(error){
+      const connection = await pool.getConnection(); 
+      await connection.rollback();
+
+      const imageRef = ref(storage,downloadURL);
+      await deleteObject(imageRef);
+      connection.release();
+      res.status(500).json({ message: "Failed to create announcement" });
+  }
+ 
+});
 
 
 module.exports = router;

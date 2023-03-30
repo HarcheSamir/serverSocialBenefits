@@ -217,6 +217,25 @@ router.post("/updateProfilePicture", upload.single("pic"), async (req, res) => {
 });
 
 
+
+router.get('/announcements', async (req, res) => {
+  try {
+    
+    let query = 'SELECT * FROM announcements ';
+  
+     const connection = await pool.getConnection()
+    const [rows] = await connection.query(query);
+
+    connection.release();
+
+    res.status(200).json(rows);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Internal server error');
+  }
+});
+
+
 module.exports = router;
 
 
