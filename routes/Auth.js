@@ -126,7 +126,7 @@ const pool = mysql.createPool(
         const connection = await pool.getConnection();
         await connection.execute('INSERT INTO accounts (email, password ,role ,job ,grade,marital_status,name, profile_image_url) VALUES (?, ? , ?  ,? ,? ,? ,? ,?)', [email, hashedPassword , role, job ,grade, maritalStatus,name,profile_image_url]);
         const token = jwt.sign({ email }, 'secret_key', { expiresIn: '1h' });
-        res.json({ token });
+        res.json("accountRegistred");
         connection.release();
       } catch (error) {
         if (error.code === 'ER_DUP_ENTRY' && error.sqlMessage.includes('email')) {
