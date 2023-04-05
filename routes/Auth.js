@@ -118,13 +118,13 @@ const pool = mysql.createPool(
     // sign-up endpoint
     router.post('/signup', async (req, res) => {
     
-      const { email, password , role ,job , grade ,maritalStatus ,name} = req.body;
-      const profile_image_url = ""
+      const { email, password , role ,job , grade ,maritalStatus ,name ,profileImageUrl} = req.body;
+      
       const hashedPassword = await bcrypt.hash(password, saltRounds);
 
       try {
         const connection = await pool.getConnection();
-        await connection.execute('INSERT INTO accounts (email, password ,role ,job ,grade,marital_status,name, profile_image_url) VALUES (?, ? , ?  ,? ,? ,? ,? ,?)', [email, hashedPassword , role, job ,grade, maritalStatus,name,profile_image_url]);
+        await connection.execute('INSERT INTO accounts (email, password ,role ,job ,grade,marital_status,name, profile_image_url) VALUES (?, ? , ?  ,? ,? ,? ,? ,?)', [email, hashedPassword , role, job ,grade, maritalStatus,name,profileImageUrl]);
         const token = jwt.sign({ email }, 'secret_key', { expiresIn: '1h' });
         res.json("accountRegistred");
         connection.release();
