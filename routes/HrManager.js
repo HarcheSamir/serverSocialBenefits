@@ -5,9 +5,9 @@ const bcrypt = require('bcrypt');
 const saltRounds = 10;
 const router=express.Router()
 const pool = mysql.createPool(
-  {host: "us-east.connect.psdb.cloud",
-  user: "2y771675on82aaznbw43",
-  password: "pscale_pw_1Fyqq2gc2AJ5GusU28C3VuyZoWMepfxe7n0z7n16bku",
+  {host: "aws.connect.psdb.cloud",
+  user: "zjcku82bip5awv4yqevg",
+  password: "pscale_pw_vZTgEBYMUsmIXIjsh9jrlBNEzn0YuosK0E6u1UpJRcx",
   database: "first",
   ssl : {"rejectUnauthorized":true}});
 
