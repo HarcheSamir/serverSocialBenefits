@@ -107,8 +107,8 @@ const saltRounds = 10;
 const jwt = require('jsonwebtoken');
 const pool = mysql.createPool(
   {host: "aws.connect.psdb.cloud",
-  user: "zjcku82bip5awv4yqevg",
-  password: "pscale_pw_vZTgEBYMUsmIXIjsh9jrlBNEzn0YuosK0E6u1UpJRcx",
+  user: "9ebukx7pqg4cg413q6zu",
+  password: "pscale_pw_QtNYIU37COt4ESMDecrBLjjjtZCNBVI1xK6l6ATzMXc",
   database: "first",
   ssl : {"rejectUnauthorized":true}});
 
