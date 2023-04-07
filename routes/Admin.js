@@ -15,12 +15,8 @@ const storage = require("../firebase");
 const memoStorage = multer.memoryStorage();
 const upload = multer({ memoStorage });
 const router=express.Router()
-const pool = mysql.createPool(
-  {host: "aws.connect.psdb.cloud",
-  user: "zjcku82bip5awv4yqevg",
-  password: "pscale_pw_vZTgEBYMUsmIXIjsh9jrlBNEzn0YuosK0E6u1UpJRcx",
-  database: "first",
-  ssl : {"rejectUnauthorized":true}});
+const pool = require('../db')
+
 
 
 /*router.post('/registerEmployee' , async (req, res) => {

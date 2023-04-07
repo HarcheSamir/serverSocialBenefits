@@ -105,12 +105,8 @@ const bcrypt = require('bcrypt');
 const router=express.Router()
 const saltRounds = 10;
 const jwt = require('jsonwebtoken');
-const pool = mysql.createPool(
-  {host: "aws.connect.psdb.cloud",
-  user: "9ebukx7pqg4cg413q6zu",
-  password: "pscale_pw_QtNYIU37COt4ESMDecrBLjjjtZCNBVI1xK6l6ATzMXc",
-  database: "first",
-  ssl : {"rejectUnauthorized":true}});
+const pool = require('../db')
+
 
 
 
@@ -137,6 +133,7 @@ const pool = mysql.createPool(
           }
       }
     });
+    
 
 
     // login endpoint
