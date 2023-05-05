@@ -120,7 +120,7 @@ const pool = require('../db')
 
       try {
         const connection = await pool.getConnection();
-        await connection.execute('INSERT INTO accounts (email, password ,role ,job ,grade,marital_status,name, profile_image_url) VALUES (?, ? , ?  ,? ,? ,? ,? ,?)', [email, hashedPassword , role, job ,phone, maritalStatus,name,profileImageUrl]);
+        await connection.execute('INSERT INTO accounts (email, password ,role ,job ,phone,maritalStatus,name, profileImageUrl) VALUES (?, ? , ?  ,? ,? ,? ,? ,?)', [email, hashedPassword , role, job ,phone, maritalStatus,name,profileImageUrl]);
         const token = jwt.sign({ email }, 'secret_key', { expiresIn: '1h' });
         res.json("accountRegistred");
         connection.release();
