@@ -195,7 +195,7 @@ router.post("/updateProfilePicture", upload.single("pic"), async (req, res) => {
       await uploadBytes(imageRef, file.buffer, metatype) ;
       downloadURL = await getDownloadURL(imageRef);
       const {email} = req.body
-      await connection.query('UPDATE accounts SET profile_image_url = ? WHERE email = ?', [downloadURL, email])
+      await connection.query('UPDATE accounts SET profileImageUrl = ? WHERE email = ?', [downloadURL, email])
       await connection.commit();
       connection.release();
       res.status(201).json({ message: "image changed successfully" });
@@ -231,6 +231,20 @@ router.get('/announcements', async (req, res) => {
   }
 });
 
+
+router.post('/updatePhone', async (req, res) => {
+  const { email, phone } = req.body;
+
+  try {
+    const connection = await pool.getConnection();
+    const sql = "UPDATE accounts SET phone = ? WHERE email = ?";
+    const result = await connection.query(sql, [phone, email]);
+    connection.release();
+    res.send(`User with email ${email} updated to phone ${phone}`);
+  } catch (err) {
+    throw err;
+  }
+});
 
 module.exports = router;
 
