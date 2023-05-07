@@ -41,10 +41,6 @@ router.post("/upload", upload.array("pic"), async (req, res) => {
 
 
 router.post("/uploadRequest", upload.array("pic"), async (req, res) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE'); // If needed
-  res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type'); // If needed
-  res.setHeader('Access-Control-Allow-Credentials', true); 
   const files = req.files;
   const downloadURLs = [];
   try{
