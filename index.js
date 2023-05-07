@@ -10,7 +10,7 @@ const Accountant = require('./routes/Accountant')
 const HrManager = require('./routes/HrManager')
 const Password = require('./routes/Password')
 let cors = require("cors");
-app.use(cors({credentials: true,origin: true,}));
+app.use(cors({credentials: true,origin: '*',}));
 app.listen(3006, () => console.log('Server listening on port 3006.'));
 
 
