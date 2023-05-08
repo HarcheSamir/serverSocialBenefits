@@ -83,14 +83,14 @@ const pool = require('../db')
 
 
 
-  
+
   router.post('/addSocialBenefit', upload.none() ,async (req, res) => {
     const { title,  description, coverage, needed_proofs } = req.body;
     console.log(req.body)
     try {
         const connection = await pool.getConnection();
         const query = 'INSERT INTO benefits (title,  description, coverage, needed_proofs) VALUES (?, ?, ?, ?)';
-        const values = [title, chapter, description, coverage, needed_proofs];
+        const values = [title, description, coverage, needed_proofs];
         const [result] = await connection.execute(query, values);
         connection.release();
         res.status(200).send({ message: 'Row added successfully!' });
