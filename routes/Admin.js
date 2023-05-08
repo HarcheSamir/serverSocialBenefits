@@ -72,11 +72,11 @@ const pool = require('../db')
 
 
   router.post('/addSocialBenefit', upload.none() ,async (req, res) => {
-    const { title, chapter, description, coverage, needed_proofs } = req.body;
+    const { title,  description, coverage, needed_proofs } = req.body;
     console.log(req.body)
     try {
         const connection = await pool.getConnection();
-        const query = 'INSERT INTO benefits (title, chapter, description, coverage, needed_proofs) VALUES (?, ?, ?, ?, ?)';
+        const query = 'INSERT INTO benefits (title,  description, coverage, needed_proofs) VALUES (?, ?, ?, ?)';
         const values = [title, chapter, description, coverage, needed_proofs];
         const [result] = await connection.execute(query, values);
         connection.release();
