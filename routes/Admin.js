@@ -71,6 +71,19 @@ const pool = require('../db')
   });
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+  
   router.post('/addSocialBenefit', upload.none() ,async (req, res) => {
     const { title,  description, coverage, needed_proofs } = req.body;
     console.log(req.body)
