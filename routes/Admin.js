@@ -1,3 +1,4 @@
+const { v4: uuidv4 } = require('uuid');
 
 const express = require('express');
 const mysql = require('mysql2/promise');
@@ -148,7 +149,8 @@ catch(error){
 
 router.post("/uploadAnnouncement", upload.single("pic"), async (req, res) => {
   const file = req.file;
-  const fileName = new Date().getTime().toString() + '-' + file.originalname;
+  const ext = file.originalname.split('.').pop();
+const fileName = `${uuidv4()}.${ext}`;
   const imageRef = ref(storage, fileName);
   const metatype = { contentType: file.mimetype, name: fileName };
   let downloadURL='';

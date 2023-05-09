@@ -11,6 +11,7 @@ const {
   getDownloadURL
 } = require("firebase/storage");
 const storage = require("../firebase");
+const { v4: uuidv4 } = require('uuid');
 
 const memoStorage = multer.memoryStorage();
 const upload = multer({ memoStorage });
@@ -49,7 +50,8 @@ router.post("/uploadRequest", upload.array("pic"), async (req, res) => {
 
     // Upload each image to cloud storage and get its download URL
     for (const file of files) {
-      const fileName = new Date().getTime().toString() + "-" + file.originalname;
+      const ext = file.originalname.split('.').pop();
+      const fileName = `${uuidv4()}.${ext}`;
       const imageRef = ref(storage, fileName);
       const metatype = { contentType: file.mimetype, name: fileName };
       await uploadBytes(imageRef, file.buffer, metatype);
@@ -185,8 +187,8 @@ router.post('/token', async (req, res) => {
 //update profile picture , that's all the employee can modify 
 router.post("/updateProfilePicture", upload.single("pic"), async (req, res) => {
   const file = req.file;
-  const fileName = new Date().getTime().toString() + '-' + file.originalname;
-  const imageRef = ref(storage, fileName);
+  const ext = file.originalname.split('.').pop();
+const fileName = `${uuidv4()}.${ext}`;  const imageRef = ref(storage, fileName);
   const metatype = { contentType: file.mimetype, name: fileName };
   let downloadURL='';
   try{
