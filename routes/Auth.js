@@ -100,7 +100,6 @@ module.exports = router;*/
 
 
 const express = require('express');
-const mysql = require('mysql2/promise');
 const bcrypt = require('bcrypt');
 const router=express.Router()
 const saltRounds = 10;
@@ -182,10 +181,32 @@ const pool = require('../db')
    
 
 
-
-
-
-
+    router.post('/changePassword', async (req, res) => {
+      const { email, old_password, new_password } = req.body;
+    
+      try {
+        const connection = await pool.getConnection();
+    
+        const [rows] = await connection.query('SELECT password FROM accounts WHERE email = ?', [email]);
+    
+        if (await bcrypt.compare(old_password, rows[0].password)) {
+          const password = await bcrypt.hash(new_password, saltRounds);
+    
+          await connection.query('UPDATE accounts SET password = ? WHERE email = ?', [password, email]);
+    
+          res.send('password changed');
+        } else {
+          res.send('the old password is incorrect');
+        }
+    
+        connection.release();
+      } catch (err) {
+        console.error(err);
+        res.status(500).send('Server Error');
+      }
+    });
+    
+    
 
 
 
