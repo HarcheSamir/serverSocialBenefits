@@ -44,12 +44,11 @@ router.post("/upload", upload.array("pic"), async (req, res) => {
 router.post("/uploadRequest", upload.array("pic"), async (req, res) => {
   const files = req.files;
   const downloadURLs = [];
-  
+  const manager_review = 'pending'
+  const accountant_review =  'pending'
   try{
     const connection = await pool.getConnection();
     await connection.beginTransaction();
-    const manager_review = 'pending'
-    const accountant_review =  'pending'
     // Upload each image to cloud storage and get its download URL
     for (const file of files) {
       const ext = file.originalname.split('.').pop();
@@ -63,7 +62,7 @@ router.post("/uploadRequest", upload.array("pic"), async (req, res) => {
 // Insert a new request with the given status
 const { status , requestedBy ,about ,description } = req.body;
 const createdAt = new Date();
-const requestResult = await connection.query("INSERT INTO requests (status ,createdAt, requestedBy ,about ,description ,manager_review , accountant_review) VALUES (?,? ,? ,? ,?)", [status, createdAt , requestedBy,about , description ,manager_review , accountant_review ]);
+const requestResult = await connection.query("INSERT INTO requests (status ,createdAt, requestedBy ,about ,description ,manager_review , accountant_review) VALUES (?,? ,? ,? ,? ,? ,?)", [status, createdAt , requestedBy,about , description ,manager_review , accountant_review ]);
 const requestId = requestResult[0].insertId;
 
 // Insert each proof with the newly created request ID and its corresponding image URL
@@ -96,6 +95,7 @@ res.status(500).json({ message: "Failed to create request" });
   }
 
 })
+
 
 
   //not needed
