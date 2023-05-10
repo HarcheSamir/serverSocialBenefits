@@ -108,78 +108,114 @@ const pool = require('../db')
   });
 
 
+  router.post('/reviewRequest', async (req, res) => {
+    const requestId = req.body.id;
+    const managerReview = req.body.review;
+    const managerEmail = req.body.email; // Assuming the manager's email is provided in the request body
+  
+    try {
+      // Acquire a connection from the pool
+      const connection = await pool.getConnection();
+  
+      if (managerReview === 'approved') {
+        const acceptedAmount = req.body.amount;
+        const managerMotif = req.body.motif || ''; // Assuming the motif for approval is provided in the request body
+        // Update the manager_review column to "approved", set the amount, update the reviewedBy and reviewedByManagerAt columns, and set the manager_motif
+        const sql = `UPDATE requests
+                     SET manager_review = 'approved', amount = ${acceptedAmount}, reviewedBy = '${managerEmail}', reviewedByManagerAt = NOW(), manager_motif = '${managerMotif}'
+                     WHERE id = ${requestId}`;
+  
+        await connection.query(sql);
+      } else if (managerReview === 'rejected') {
+        const managerMotif = req.body.motif || ''; // Assuming the motif for rejection is provided in the request body
+        // Update the manager_review column to "rejected", set the status to "rejected", update the reviewedBy, reviewedByManagerAt, and completedAt columns, and set the manager_motif
+        const sql = `UPDATE requests
+                     SET manager_review = 'rejected', status = 'rejected', reviewedBy = '${managerEmail}', reviewedByManagerAt = NOW(), completedAt = NOW(), manager_motif = '${managerMotif}'
+                     WHERE id = ${requestId}`;
+  
+        await connection.query(sql);
+      }
+  
+      connection.release(); // Release the connection back to the pool
+  
+      res.status(200).json({ message: 'Request status updated successfully' });
+    } catch (error) {
+      console.error('Error updating request status:', error);
+      res.status(500).json({ error: 'Failed to update request status' });
+    }
+  });
+  
+  
 
 
 
 
 
 //get/filter requests , paginated 
-  router.get('/requests', async (req, res) => {
-    try {
-      const { id, requestedBy, reviewedBy, about, status } = req.query;
+router.get('/requests', async (req, res) => {
+  try {
+    const { id, requestedBy, reviewedBy, about, status } = req.query;
 
-      const connection = await pool.getConnection();
+    const connection = await pool.getConnection();
 
+    let queryy = 'SELECT COUNT(*) as total FROM requests ';
+    let query2 = 'SELECT r.*, a.* FROM requests AS r LEFT JOIN accounts AS a ON r.requestedBy = a.email ';
 
+    (id || requestedBy || reviewedBy || about || status) && (queryy = 'SELECT COUNT(*) as total FROM requests WHERE ') && (query2 = 'SELECT r.*, a.* FROM requests AS r LEFT JOIN accounts AS a ON r.requestedBy = a.email WHERE ');
 
-      let queryy = 'SELECT COUNT(*) as total FROM requests ';
-      let query2 = 'SELECT * FROM requests ' ;
-    
-      (id || requestedBy || reviewedBy || about || status) && (queryy = 'SELECT COUNT(*) as total FROM requests where ') && (query2 = 'SELECT * FROM requests where ');
-      let conditions = []
-      id && conditions.push(`id = '${id}'`)
-      requestedBy && conditions.push(`requestedBy = '${requestedBy}'`)
-      reviewedBy && conditions.push(` reviewedBy = ${reviewedBy}`)
-      about && conditions.push(`about = '${about}'`)
-      status && conditions.push(`status = '${status}'`)
-        
-    
-        queryy += conditions.join(' AND ');
-        query2 += conditions.join(' AND ');
+    let conditions = [];
+    id && conditions.push(`r.id = '${id}'`);
+    requestedBy && conditions.push(`r.requestedBy = '${requestedBy}'`);
+    reviewedBy && conditions.push(`r.reviewedBy = '${reviewedBy}'`);
+    about && conditions.push(`r.about = '${about}'`);
+    status && conditions.push(`r.status = '${status}'`);
 
-      // Get total number of records
-      const [result] = await connection.query(queryy);
-     
-      const totalRecords = result[0].total;
-  
-      // Calculate pagination info
-      const page = Number(req.query.page) || 1;
-      const limit = Number(req.query.limit) || 10;
-      const totalPages = Math.ceil(totalRecords / limit);
-      const offset = (page - 1) * limit;
-  
-      // Get records for the requested page
-      const [records] = await connection.query( query2 + ' ORDER BY createdAt LIMIT ?, ?', [offset, limit]);
-  
-      // Calculate previous and next page numbers
-      let previousPage = null;
-      let nextPage = null;
-      if (page > 1) {
-        previousPage = page - 1;
-      }
-      if (page < totalPages) {
-        nextPage = page + 1;
-      }
-  
-      const infos = {
-        previous: previousPage,
-        next: nextPage,
-        totalPages,
-        currentPage: page,
-        totalRecords : totalRecords
-      };
-  
-      res.json({
-        infos,
-        records,
-      });
-  
-      connection.release();
-    } catch (err) {
-      console.error(err.message);
-      res.status(500).send('Server Error');
+    queryy += conditions.join(' AND ');
+    query2 += conditions.join(' AND ');
+
+    // Get total number of records
+    const [result] = await connection.query(queryy);
+    const totalRecords = result[0].total;
+
+    // Calculate pagination info
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 10;
+    const totalPages = Math.ceil(totalRecords / limit);
+    const offset = (page - 1) * limit;
+
+    // Get records for the requested page
+    const [records] = await connection.query(query2 + ' ORDER BY r.createdAt LIMIT ?, ?', [offset, limit]);
+
+    // Calculate previous and next page numbers
+    let previousPage = null;
+    let nextPage = null;
+    if (page > 1) {
+      previousPage = page - 1;
     }
-  });
+    if (page < totalPages) {
+      nextPage = page + 1;
+    }
+
+    const infos = {
+      previous: previousPage,
+      next: nextPage,
+      totalPages,
+      currentPage: page,
+      totalRecords: totalRecords,
+    };
+
+    res.json({
+      infos,
+      records,
+    });
+
+    connection.release();
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
+
 
 
 

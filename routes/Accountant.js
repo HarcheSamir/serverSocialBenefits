@@ -1,6 +1,7 @@
 
 const express = require('express');
 const mysql = require('mysql2/promise');
+const { v4: uuidv4 } = require('uuid');
 const multer = require('multer');
 const router=express.Router()
 const {
@@ -21,8 +22,8 @@ const upload = multer({ memoStorage });
 
 router.post("/uploadTransaction", upload.single("pic"), async (req, res) => {
     const file = req.file;
-    const fileName = new Date().getTime().toString() + '-' + file.originalname;
-    const imageRef = ref(storage, fileName);
+    const ext = file.originalname.split('.').pop();
+    const fileName = `${uuidv4()}.${ext}`;    const imageRef = ref(storage, fileName);
     const metatype = { contentType: file.mimetype, name: fileName };
     let downloadURL='';
     try{
@@ -30,9 +31,10 @@ router.post("/uploadTransaction", upload.single("pic"), async (req, res) => {
         await connection.beginTransaction();
         await uploadBytes(imageRef, file.buffer, metatype) ;
         downloadURL = await getDownloadURL(imageRef);
-        const {amount} = req.body
+        const amount = req.body.amount; 
+        const about = req.body.about
         const createdAt = new Date();
-        await connection.query("INSERT INTO transactions (amount, image_url ,createdAt) VALUES (?, ?, ?)", [amount, downloadURL ,createdAt])
+        await connection.query("INSERT INTO transactions (amount, image_url ,about ,createdAt) VALUES (?, ?,?, NOW())", [amount, downloadURL, about ])
         await connection.commit();
         connection.release();
         res.status(201).json({ message: "transaction created successfully" });

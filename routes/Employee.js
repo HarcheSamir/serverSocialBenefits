@@ -62,7 +62,7 @@ router.post("/uploadRequest", upload.array("pic"), async (req, res) => {
 // Insert a new request with the given status
 const { status , requestedBy ,about ,description } = req.body;
 const createdAt = new Date();
-const requestResult = await connection.query("INSERT INTO requests (status ,createdAt, requestedBy ,about ,description ,manager_review , accountant_review) VALUES (?,? ,? ,? ,? ,? ,?)", [status, createdAt , requestedBy,about , description ,manager_review , accountant_review ]);
+const requestResult = await connection.query("INSERT INTO requests (status ,createdAt, requestedBy ,about ,description ,manager_review , accountant_review) VALUES (?,NOW(),? ,? ,? ,? ,?)", [status, requestedBy,about , description ,manager_review , accountant_review ]);
 const requestId = requestResult[0].insertId;
 
 // Insert each proof with the newly created request ID and its corresponding image URL
