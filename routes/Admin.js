@@ -178,4 +178,34 @@ const fileName = `${uuidv4()}.${ext}`;
 });
 
 
+router.get('/getBudget', async (req, res) => {
+  try {
+    // Acquire a connection from the connection pool
+    const connection = await pool.getConnection();
+
+    // Execute the query to calculate the sum of all amounts
+    const queryResult = await connection.query('SELECT SUM(amount) AS totalBudget FROM transactions');
+
+    // Release the connection back to the pool
+    connection.release();
+
+    // Extract the total budget from the query result
+    const budget = queryResult[0][0].totalBudget;
+     console.log(budget)
+    if (budget === null) {
+      throw new Error('Failed to retrieve total budget');
+    }
+
+    // Send the total budget as the response
+    res.json({ budget });
+  } catch (error) {
+    // Handle any errors that occur during the process
+    console.error('Error retrieving budget:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+
+
+
 module.exports = router;
