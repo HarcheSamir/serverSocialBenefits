@@ -78,10 +78,11 @@ const upload = multer({ memoStorage });
       const connection = await pool.getConnection();
   
       if (managerReview === 'approved') {
+        const reply = requ.body.reply
         const managerMotif = req.body.motif || ''; // Assuming the motif for approval is provided in the request body
         // Update the manager_review column to "approved", set the amount, update the reviewedBy and reviewedByManagerAt columns, and set the manager_motif
         const sql = `UPDATE requests
-                     SET accountant_review = 'approved', status = 'completed', reviewedByAccountantAt = NOW(), accountant_motif = '${managerMotif}'
+                     SET accountant_review = 'approved',reply = ${reply} status = 'completed', reviewedByAccountantAt = NOW(), accountant_motif = '${managerMotif}'
                      WHERE id = ${requestId}`;
   
         await connection.query(sql);
