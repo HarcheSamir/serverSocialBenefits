@@ -160,7 +160,7 @@ router.get('/requests', async (req, res) => {
     (id || requestedBy || reviewedBy || about || status) && (queryy = 'SELECT COUNT(*) as total FROM requests WHERE ') && (query2 = 'SELECT r.*, a.* FROM requests AS r LEFT JOIN accounts AS a ON r.requestedBy = a.email WHERE ');
 
     let conditions = [];
-    id && conditions.push(`r.id = '${id}'`);
+    id && conditions.push(`id = '${id}'`);
     requestedBy && conditions.push(`requestedBy = '${requestedBy}'`);
     reviewedBy && conditions.push(`reviewedBy = '${reviewedBy}'`);
     about && conditions.push(`about = '${about}'`);
