@@ -169,15 +169,30 @@ const pool = require('../db')
     });
 
    //verify token endpoint
-    router.get('/verify', async (req, res) => {
+   router.get('/verify', async (req, res) => {
+    try {
+      const connection = await pool.getConnection();
       const token = req.headers.authorization.split(' ')[1];
-      try {
-        const decoded = jwt.verify(token, 'secret_key');
-        res.json({ email: decoded.email });
-      } catch (error) {
-        res.status(401).json({ error: 'Invalid token' });
+      const decoded = jwt.verify(token, 'secret_key');
+      const email = decoded.email;
+  
+      const query = 'SELECT * FROM accounts WHERE email = ?';
+      const [rows] = await connection.query(query, [email]);
+  
+      if (rows.length > 0) {
+        const account = rows[0];
+        console.log(account)
+        res.json({ email: decoded.email , account : account});
+      } else {
+        res.status(404).json({ error: 'Account not found' });
       }
-    });
+  
+      connection.release();
+    } catch (error) {
+      res.status(401).json({ error: 'Invalid token' });
+    }
+  });
+  
    
 
 
