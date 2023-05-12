@@ -268,6 +268,78 @@ router.get('/requests', async (req, res) => {
 
   
 
-
+  router.get('/searchFilter', async (req, res) => {
+    try {
+      const { id, requestedBy, reviewedBy, about, status, for: query } = req.query;
+  
+      const connection = await pool.getConnection();
+  
+      let queryy = 'SELECT COUNT(*) as total FROM requests ';
+      let query2 = 'SELECT r.*, a.* FROM requests AS r LEFT JOIN accounts AS a ON r.requestedBy = a.email ';
+  
+      let conditions = [];
+  
+      if (id || requestedBy || reviewedBy || about || status) {
+        queryy = 'SELECT COUNT(*) as total FROM requests WHERE ';
+        query2 = 'SELECT r.*, a.* FROM requests AS r LEFT JOIN accounts AS a ON r.requestedBy = a.email WHERE ';
+  
+        id && conditions.push(`id = '${id}'`);
+        requestedBy && conditions.push(`requestedBy = '${requestedBy}'`);
+        reviewedBy && conditions.push(`reviewedBy = '${reviewedBy}'`);
+        about && conditions.push(`about = '${about}'`);
+        status && conditions.push(`status = '${status}'`);
+      }
+  
+      if (query) {
+        const searchConditions = `description LIKE '%${query}%' OR requestedBy LIKE '%${query}%'`;
+        conditions.push(searchConditions);
+      }
+  
+      queryy += conditions.join(' AND ');
+      query2 += conditions.join(' AND ');
+  
+      // Get total number of records
+      const [result] = await connection.query(queryy);
+      const totalRecords = result[0].total;
+  
+      // Calculate pagination info
+      const page = Number(req.query.page) || 1;
+      const limit = Number(req.query.limit) || 10;
+      const totalPages = Math.ceil(totalRecords / limit);
+      const offset = (page - 1) * limit;
+  
+      // Get records for the requested page
+      const [records] = await connection.query(query2 + ' ORDER BY r.createdAt LIMIT ?, ?', [offset, limit]);
+  
+      // Calculate previous and next page numbers
+      let previousPage = null;
+      let nextPage = null;
+      if (page > 1) {
+        previousPage = page - 1;
+      }
+      if (page < totalPages) {
+        nextPage = page + 1;
+      }
+  
+      const infos = {
+        previous: previousPage,
+        next: nextPage,
+        totalPages,
+        currentPage: page,
+        totalRecords,
+      };
+  
+      res.json({
+        infos,
+        records,
+      });
+  
+      connection.release();
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).send('Server Error');
+    }
+  });
+  
 
 module.exports = router;

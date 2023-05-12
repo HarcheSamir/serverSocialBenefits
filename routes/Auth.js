@@ -181,7 +181,6 @@ const pool = require('../db')
   
       if (rows.length > 0) {
         const account = rows[0];
-        console.log(account)
         res.json({ email: decoded.email , account : account});
       } else {
         res.status(404).json({ error: 'Account not found' });
