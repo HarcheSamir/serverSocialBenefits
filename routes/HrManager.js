@@ -145,11 +145,7 @@ const pool = require('../db')
     }
   });
   
-  
-
-
-
-
+ 
 
 //get/filter requests , paginated 
 router.get('/requests', async (req, res) => {
@@ -165,10 +161,10 @@ router.get('/requests', async (req, res) => {
 
     let conditions = [];
     id && conditions.push(`r.id = '${id}'`);
-    requestedBy && conditions.push(`r.requestedBy = '${requestedBy}'`);
-    reviewedBy && conditions.push(`r.reviewedBy = '${reviewedBy}'`);
-    about && conditions.push(`r.about = '${about}'`);
-    status && conditions.push(`r.status = '${status}'`);
+    requestedBy && conditions.push(`requestedBy = '${requestedBy}'`);
+    reviewedBy && conditions.push(`reviewedBy = '${reviewedBy}'`);
+    about && conditions.push(`about = '${about}'`);
+    status && conditions.push(`status = '${status}'`);
 
     queryy += conditions.join(' AND ');
     query2 += conditions.join(' AND ');
