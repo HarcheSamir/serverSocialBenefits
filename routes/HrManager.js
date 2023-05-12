@@ -56,7 +56,25 @@ const pool = require('../db')
   });
   
  
-
+  router.get('/pics/:request_id', async (req, res) => {
+    const requestId = req.params.request_id;
+  
+    try {
+      // Get a connection from the pool
+      const connection = await pool.getConnection();
+  
+      // Execute the query
+      const [rows] = await connection.query('SELECT * FROM proofs WHERE request_id = ?', [requestId]);
+  
+      // Release the connection
+      connection.release();
+  
+      res.status(200).json(rows);
+    } catch (error) {
+      console.error('Error executing query:', error);
+      res.status(500).json({ error: 'Failed to fetch data from the database' });
+    }
+  });
 
 //search among accounts
   router.get('/searchAccounts', async (req, res) => {
