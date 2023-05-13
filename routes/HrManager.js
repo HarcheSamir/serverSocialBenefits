@@ -198,7 +198,7 @@ router.get('/requests', async (req, res) => {
     const offset = (page - 1) * limit;
 
     // Get records for the requested page
-    const [records] = await connection.query(query2 + ' ORDER BY r.createdAt LIMIT ?, ?', [offset, limit]);
+    const [records] = await connection.query(query2 + ' ORDER BY r.createdAt DESC  LIMIT ?, ?', [offset, limit]);
 
     // Calculate previous and next page numbers
     let previousPage = null;
