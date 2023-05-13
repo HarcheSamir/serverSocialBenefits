@@ -297,24 +297,24 @@ router.get('/requests', async (req, res) => {
   
       let conditions = [];
   
-      if (id || requestedBy || reviewedBy || about || status || manager_review|| accountant_review) {
+      if (id || requestedBy || reviewedBy || about || status || manager_review|| accountant_review ||query) {
         queryy = 'SELECT COUNT(*) as total FROM requests WHERE ';
         query2 = 'SELECT r.*, a.* FROM requests AS r LEFT JOIN accounts AS a ON r.requestedBy = a.email WHERE ';
-  
+         query && conditions.push(`description LIKE '%${query}%' OR requestedBy LIKE '%${query}%'`)
         id && conditions.push(`id = '${id}'`);
         requestedBy && conditions.push(`requestedBy = '${requestedBy}'`);
         reviewedBy && conditions.push(`reviewedBy = '${reviewedBy}'`);
-        about && conditions.push(`about = '${about}'`);
+        about && conditions.push(`\`about\` = '${about}'`); // Enclose "about" within backticks
         status && conditions.push(`status = '${status}'`);
         manager_review && conditions.push(`manager_review = '${manager_review}'`);
         accountant_review && conditions.push(`accountant_review = '${manager_review}'`);
 
       }
   
-      if (query) {
+   /*   if (query) {
         const searchConditions = `description LIKE '%${query}%' OR requestedBy LIKE '%${query}%'`;
         conditions.push(searchConditions);
-      }
+      }*/
   
       queryy += conditions.join(' AND ');
       query2 += conditions.join(' AND ');
