@@ -288,7 +288,7 @@ router.get('/requests', async (req, res) => {
 
   router.get('/searchFilter', async (req, res) => {
     try {
-      const { id, requestedBy, reviewedBy, about, status, for: query } = req.query;
+      const { id, requestedBy, reviewedBy, about, status ,manager_review, accountant_review, for: query } = req.query;
   
       const connection = await pool.getConnection();
   
@@ -297,7 +297,7 @@ router.get('/requests', async (req, res) => {
   
       let conditions = [];
   
-      if (id || requestedBy || reviewedBy || about || status) {
+      if (id || requestedBy || reviewedBy || about || status || manager_review|| accountant_review) {
         queryy = 'SELECT COUNT(*) as total FROM requests WHERE ';
         query2 = 'SELECT r.*, a.* FROM requests AS r LEFT JOIN accounts AS a ON r.requestedBy = a.email WHERE ';
   
@@ -306,6 +306,9 @@ router.get('/requests', async (req, res) => {
         reviewedBy && conditions.push(`reviewedBy = '${reviewedBy}'`);
         about && conditions.push(`about = '${about}'`);
         status && conditions.push(`status = '${status}'`);
+        manager_review && conditions.push(`manager_review = '${manager_review}'`);
+        accountant_review && conditions.push(`accountant_review = '${manager_review}'`);
+
       }
   
       if (query) {
