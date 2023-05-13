@@ -300,7 +300,7 @@ router.get('/requests', async (req, res) => {
       if (id || requestedBy || reviewedBy || about || status || manager_review|| accountant_review ||query) {
         queryy = 'SELECT COUNT(*) as total FROM requests WHERE ';
         query2 = 'SELECT r.*, a.* FROM requests AS r LEFT JOIN accounts AS a ON r.requestedBy = a.email WHERE ';
-         query && conditions.push(`description LIKE '%${query}%' OR requestedBy LIKE '%${query}%'`)
+         query && conditions.push(`(description LIKE '%${query}%' OR requestedBy LIKE '%${query}%')`)
         id && conditions.push(`id = '${id}'`);
         requestedBy && conditions.push(`requestedBy = '${requestedBy}'`);
         reviewedBy && conditions.push(`reviewedBy = '${reviewedBy}'`);
@@ -329,6 +329,7 @@ router.get('/requests', async (req, res) => {
       const totalPages = Math.ceil(totalRecords / limit);
       const offset = (page - 1) * limit;
   
+      console.log(query2 + ` ORDER BY r.createdAt DESC LIMIT ${offset}, ${limit}`)
       // Get records for the requested page
       const [records] = await connection.query(query2 + ' ORDER BY r.createdAt DESC LIMIT ?, ?', [offset, limit]);
   
