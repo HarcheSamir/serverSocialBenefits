@@ -47,6 +47,8 @@ const upload = multer({ memoStorage });
 
               for (const requestId of requestIds) {
         await connection.query("INSERT INTO transaction_request (id, transaction_id) VALUES (?, ?)", [requestId, transactionId]); // Insert the transaction ID into transaction_request table for each request ID
+        await connection.query("UPDATE requests SET status = 'archive' WHERE id = ?", [requestId]);
+
       }
   
       await connection.commit();
