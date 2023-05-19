@@ -19,6 +19,7 @@ const pool = require('../db')
 
 
 
+
   //not needed , 
 router.post("/upload", upload.array("pic"), async (req, res) => {
 
@@ -60,9 +61,9 @@ router.post("/uploadRequest", upload.array("pic"), async (req, res) => {
       downloadURLs.push(downloadURL);
     }
 // Insert a new request with the given status
-const { status , requestedBy ,about ,description } = req.body;
+const { status , requestedBy ,about ,description , service ,service_title, requested_amount } = req.body;
 const createdAt = new Date();
-const requestResult = await connection.query("INSERT INTO requests (status ,createdAt, requestedBy ,about ,description ,manager_review , accountant_review) VALUES (?,NOW(),? ,? ,? ,? ,?)", [status, requestedBy,about , description ,manager_review , accountant_review ]);
+const requestResult = await connection.query("INSERT INTO requests (status ,createdAt, requestedBy ,about ,description ,manager_review , accountant_review, service ,service_title, requested_amount) VALUES (?,NOW(),? ,? ,? ,? ,? ,? ,? ,?)", [status, requestedBy,about , description ,manager_review , accountant_review, service ,service_title, requested_amount ]);
 const requestId = requestResult[0].insertId;
 
 // Insert each proof with the newly created request ID and its corresponding image URL
@@ -249,6 +250,23 @@ router.post('/updatePhone', async (req, res) => {
     throw err;
   }
 });
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
 
 module.exports = router;
 

@@ -86,12 +86,12 @@ const pool = require('../db')
 
 
   router.post('/addSocialBenefit', upload.none() ,async (req, res) => {
-    const { title,  description, coverage, needed_proofs } = req.body;
+    const { title,  description, coverage, needed_proofs , service } = req.body;
     console.log(req.body)
     try {
         const connection = await pool.getConnection();
-        const query = 'INSERT INTO benefits (title,  description, coverage, needed_proofs) VALUES (?, ?, ?, ?)';
-        const values = [title, description, coverage, needed_proofs];
+        const query = 'INSERT INTO benefits (title,  description, coverage, needed_proofs ,service) VALUES (?, ?, ?, ? ,?)';
+        const values = [title, description, coverage, needed_proofs ,service];
         const [result] = await connection.execute(query, values);
         connection.release();
         res.status(200).send({ message: 'Row added successfully!' });
@@ -121,20 +121,20 @@ catch(error){
 
 
 
-  router.get('/socialBenefits', async (req, res) => {
+router.get('/socialBenefits', async (req, res) => {
   try {
-    const { chapter  , title } = req.query;
+    const {  title ,benefit_id } = req.query;
     const connection = await pool.getConnection();
 
-    let query = 'SELECT * FROM benefits ';
-  
-  (chapter || title) && (query = 'SELECT * FROM benefits where ');
-  let conditions = []
-  chapter && conditions.push(`chapter = '${chapter}'`)
-  title && conditions.push(`title = '${title}'`)
-    
+    let query = 'SELECT b.*, s.* FROM benefits AS b LEFT JOIN services AS s ON b.service = s.id';
 
-    query += conditions.join(' AND ');
+    let conditions = [];
+    if (benefit_id) conditions.push(`benefit_id = '${benefit_id}'`);
+    if (title) conditions.push(`title = '${title}'`);
+
+    if (conditions.length > 0) {
+      query += ' WHERE ' + conditions.join(' AND ');
+    }
 
     const [rows] = await connection.query(query);
 
@@ -146,6 +146,7 @@ catch(error){
     res.status(500).send('Internal server error');
   }
 });
+
 
 router.post("/uploadAnnouncement", upload.single("pic"), async (req, res) => {
   const file = req.file;
