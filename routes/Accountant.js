@@ -186,7 +186,7 @@ router.post('/services/:serviceId', async (req, res) => {
     }
 
     // Update the service amount and budget in the database
-    await connection.query('UPDATE services SET amount = ? WHERE id = ?', [amount, serviceId]);
+    await connection.query('UPDATE services SET amount = ? ,date_modified=Now() WHERE id = ?', [amount, serviceId]);
     await connection.query('UPDATE budget SET amount = ?', [newBudgetAmount]);
     const [title] = await connection.query('SELECT title FROM services WHERE id = ?', [serviceId]);
     // Insert transaction into crates_transactions table
@@ -199,6 +199,25 @@ router.post('/services/:serviceId', async (req, res) => {
     res.status(500).json({ error: 'An error occurred.' });
   }
 });
+
+router.get('/services', async (req, res) => {
+  try {
+    const connection = await pool.getConnection();
+
+    const query = 'SELECT * FROM services';
+
+    const [rows] = await connection.query(query);
+
+    connection.release();
+
+    res.status(200).json(rows);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Internal server error');
+  }
+});
+
+
 
 // ...
 
