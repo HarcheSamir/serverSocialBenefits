@@ -12,10 +12,21 @@ const {
 } = require("firebase/storage");
 const storage = require("../firebase");
 const { v4: uuidv4 } = require('uuid');
-
 const memoStorage = multer.memoryStorage();
 const upload = multer({ memoStorage });
+
 const pool = require('../db')
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -259,7 +270,6 @@ router.post('/updatePhone', async (req, res) => {
 
 
 
- 
 
 
 
