@@ -310,8 +310,8 @@ router.get('/budget', async (req, res) => {
       // Handle case when there are no rows in the table
       res.status(404).send('No amounts found in the budget');
     } else {
-      const firstAmount = rows[0].amount;
-      res.status(200).json({ firstAmount });
+      const budget = rows[0].amount;
+      res.status(200).json({ budget });
     }
   } catch (error) {
     console.error(error);
