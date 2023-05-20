@@ -39,13 +39,13 @@ const upload = multer({ memoStorage });
     try {
       const connection = await pool.getConnection();
       const [service] = await connection.query('select service from requests where id = ?' , [requestId])
-      const [currentServiceResult] = await connection.query('SELECT amount FROM services WHERE id = ?', [service[0].service]);
+      const [currentServiceResult] = await connection.query('SELECT * FROM services WHERE id = ?', [service[0].service]);
       if (currentServiceResult[0].amount - amount < 0 ){      return res.status(400).json({ error: 'Insufficient budget. Please choose a lower amount.' });      }
       await connection.beginTransaction();
       await uploadBytes(imageRef, file.buffer, metatype);
       downloadURL = await getDownloadURL(imageRef);
-      await connection.query('UPDATE services SET amount = ? WHERE id = ?', [(currentServiceResult[0].amount - amount), service[0].service]);
-      await connection.query("INSERT INTO transactions (amount, image_url, createdAt ,requests) VALUES (?, ?, NOW(), ?)", [amount, downloadURL ,requestId]); 
+      await connection.query('UPDATE services SET amount = ? WHERE id = ?', [(currentServiceResult[0].amount - amount), service[0].service ]);
+      await connection.query("INSERT INTO transactions (amount, image_url, createdAt ,requests ,service_id ,service_title ,type) VALUES (?, ?, NOW(), ? ,? ,? ,'request')", [amount*-1, downloadURL ,requestId ,service[0].service  ,currentServiceResult[0].title]); 
       await connection.query('UPDATE requests SET accountant_review =  ? , status = ? , completedAt = NOW()  WHERE id = ?', ['approved' ,'completed' , requestId]);
 
       await connection.commit();
@@ -190,7 +190,7 @@ router.post('/services/:serviceId', async (req, res) => {
     await connection.query('UPDATE budget SET amount = ?', [newBudgetAmount]);
     const [title] = await connection.query('SELECT title FROM services WHERE id = ?', [serviceId]);
     // Insert transaction into crates_transactions table
-   amountDifference!=0 && await connection.query('INSERT INTO crates_transactions (service_id, amount, transaction_date , service_title) VALUES (?, ?, NOW() ,?)', [serviceId, amountDifference ,title[0].title]);
+   amountDifference!=0 && await connection.query("INSERT INTO transactions (service_id, amount, createdAt , service_title ,type) VALUES (?, ?, NOW() ,? ,'crate')", [serviceId, amountDifference ,title[0].title]);
 
     connection.release();
 
@@ -337,8 +337,10 @@ router.get('/transactions', async (req, res) => {
     const offset = (page - 1) * limit;
 
     // Get records for the requested page
-    const [records] = await connection.query('SELECT t.*, r.* FROM transactions AS t LEFT JOIN requests AS r ON t.requests = r.id ORDER BY t.createdAt LIMIT ?, ?', [offset, limit]);
-
+    const [records] = await connection.query(
+      'SELECT t.id AS t_id, t.createdAt AS t_createdAt, t.amount AS t_amount, t.requests AS t_requests, t.service_id AS t_service_id, t.service_title AS t_service_title, t.type AS t_type, r.id AS r_id, r.createdAt AS r_createdAt, r.requestedBy AS r_requestedBy, r.about AS r_about, r.reviewedBy AS r_reviewedBy, r.description AS r_description, r.manager_review AS r_manager_review, r.accountant_review AS r_accountant_review, r.manager_motif AS r_manager_motif, r.accountant_motif AS r_accountant_motif, r.status AS r_status, r.amount AS r_amount, r.reviewedByManagerAt AS r_reviewedByManagerAt, r.completedAt AS r_completedAt, r.reply AS r_reply, r.reviewedByAccountantAt AS r_reviewedByAccountantAt, r.requested_amount AS r_requested_amount, r.service AS r_service, r.service_title AS r_service_title FROM transactions AS t LEFT JOIN requests AS r ON t.requests = r.id ORDER BY t.createdAt desc LIMIT ?, ?',
+      [offset, limit]
+    );
     // Calculate previous and next page numbers
     let previousPage = null;
     let nextPage = null;
@@ -370,4 +372,16 @@ router.get('/transactions', async (req, res) => {
   }
 });
   
+
+
+
+
+
+
+
+
+
+
+
+
 module.exports = router;
