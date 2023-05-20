@@ -296,6 +296,28 @@ router.get('/cratesTransactions', async (req, res) => {
 
 
 
+router.get('/budget/first-amount', async (req, res) => {
+  try {
+    const connection = await pool.getConnection();
+
+    const query = 'SELECT amount FROM budget ORDER BY id LIMIT 1';
+
+    const [rows] = await connection.query(query);
+
+    connection.release();
+
+    if (rows.length === 0) {
+      // Handle case when there are no rows in the table
+      res.status(404).send('No amounts found in the budget');
+    } else {
+      const firstAmount = rows[0].amount;
+      res.status(200).json({ firstAmount });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Internal server error');
+  }
+});
 
 
 
