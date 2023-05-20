@@ -296,7 +296,7 @@ router.get('/cratesTransactions', async (req, res) => {
 
 
 
-router.get('/budget/first-amount', async (req, res) => {
+router.get('/budget', async (req, res) => {
   try {
     const connection = await pool.getConnection();
 
