@@ -46,4 +46,81 @@ router.post('/decisions', async (req, res) => {
   }
 });
 
+/*router.post('/updateNotifs', async (req, res) => {
+  const { email, number } = req.body;
+
+  try {
+    const connection = await pool.getConnection();
+
+    // Update the notifications column for the specified email
+    const updateQuery = `UPDATE accounts SET notifications = ? WHERE email = ?`;
+    await connection.query(updateQuery, [number, email]);
+
+    connection.release();
+    const wss = req.app.get('wss');
+    wss.clients.forEach((client) => {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(JSON.stringify({ event: 'notif', data:{number:number , email : email} }));
+      }
+    });
+    res.status(200).json({ message: 'Notifications updated successfully' });
+  } catch (error) {
+    console.error('Error updating notifications:', error);
+    res.status(500).json({ error: 'An error occurred while updating notifications' });
+  }
+});*/
+
+
+
+router.post('/updateNotifs', async (req, res) => {
+  const { email, number } = req.body;
+
+  try {
+    const connection = await pool.getConnection();
+if(number==0){
+
+  // Update the notifications column for the specified email
+  const updateQuery = `UPDATE accounts SET notifications = ? WHERE email = ?`;
+  await connection.query(updateQuery, [number, email]);
+
+  connection.release();
+  const wss = req.app.get('wss');
+  wss.clients.forEach((client) => {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(JSON.stringify({ event: 'notif', data:{number:number , email : email} }));
+    }
+  });
+  res.status(200).json({ message: 'Notifications updated successfully' });
+
+}else{
+    const selectQuery = `SELECT notifications FROM accounts WHERE email = ?`;
+    const [result] = await connection.query(selectQuery, [email]);
+    const originalNotifications = result[0].notifications;
+
+console.log(originalNotifications) ;
+
+    // Increment the notifications column for the specified email
+    const updateQuery = `UPDATE accounts SET notifications = notifications + 1 WHERE email = ?`;
+    await connection.query(updateQuery, [email]);
+
+    connection.release();
+    const wss = req.app.get('wss');
+    wss.clients.forEach((client) => {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(JSON.stringify({ event: 'notif', data:{number:originalNotifications+1 , email : email} }));
+      }
+    });
+    res.status(200).json({ message: 'Notifications updated successfully' });
+  }
+  } catch (error) {
+    console.error('Error updating notifications:', error);
+    res.status(500).json({ error: 'An error occurred while updating notifications' });
+  }
+});
+
+
+
+
+
+
 module.exports = router;
