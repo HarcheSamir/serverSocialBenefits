@@ -12,11 +12,12 @@ const Password = require('./routes/Password')
 let cors = require("cors");
 const http = require('http').Server(app);
 const WebSocket = require('ws');
+require('dotenv').config(); // Load environment variables from .env file
 
 // Import your decision routes
 const decisionRoutes = require('./routes/notifs');
 app.use(cors({credentials: true,  origin: true}));
-http.listen(3006, () => console.log('Server listening on port 3006.'));
+http.listen(process.env.PORT||3006, () => console.log('Server listening on port 3006.'));
 const wss = new WebSocket.Server({ server: http });
 app.set('wss', wss); // Set the WebSocket instance to be accessible in the routes
 
