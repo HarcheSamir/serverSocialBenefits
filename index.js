@@ -35,7 +35,11 @@ wss.on('connection', (ws) => {
     console.log('WebSocket client disconnected.');
   });
 });
-
+app.get('/background', (req, res) => {
+    console.log('Background process executed');
+    res.sendStatus(200); // Respond with a success status code (e.g., 200)
+  });
+  
 app.use('/', decisionRoutes);
 app.use('/' ,Auth)
 app.use('/', Employee)
