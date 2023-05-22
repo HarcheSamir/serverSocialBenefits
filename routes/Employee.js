@@ -82,6 +82,10 @@ for (const downloadURL of downloadURLs) {
   await connection.query("INSERT INTO proofs (request_id, image_url) VALUES (?, ?)", [requestId, downloadURL]);
 }
 
+const query = 'INSERT INTO notifications (request_id, forr, frrom, time, text) VALUES (?, ?, ?, Now(), ?)';
+const values = [requestId, 'manager', requestedBy, 'New request has been submitted that requires your immediate review and decision.'];
+await connection.query(query, values);
+
 // Commit the transaction if everything succeeded
 await connection.commit();
 connection.release();

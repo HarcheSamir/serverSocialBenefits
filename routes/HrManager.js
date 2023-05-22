@@ -129,6 +129,7 @@ const pool = require('../db')
   router.post('/reviewRequest', async (req, res) => {
     const requestId = req.body.id;
     const managerReview = req.body.review;
+    const frrom = req.body.frrom;
     const managerEmail = req.body.email; // Assuming the manager's email is provided in the request body
   
     try {
@@ -144,13 +145,18 @@ const pool = require('../db')
                      WHERE id = ${requestId}`;
   
         await connection.query(sql);
+        const query = 'INSERT INTO notifications (request_id, forr, frrom, time, text) VALUES (?, ?, ?, Now(), ?)';
+         const values = [requestId, 'accountant',frrom, 'New request has been accepted by the system manager and it is awaiting for your decision decision.'];
+         await connection.query(query, values);
       } else if (managerReview === 'rejected') {
         const managerMotif = req.body.motif || ''; // Assuming the motif for rejection is provided in the request body
         // Update the manager_review column to "rejected", set the status to "rejected", update the reviewedBy, reviewedByManagerAt, and completedAt columns, and set the manager_motif
         const sql = `UPDATE requests
                      SET manager_review = 'rejected', status = 'rejected', reviewedBy = '${managerEmail}', reviewedByManagerAt = NOW(), completedAt = NOW(), manager_motif = '${managerMotif}'
                      WHERE id = ${requestId}`;
-  
+                     const query = 'INSERT INTO notifications (request_id, forr, frrom, time, text) VALUES (?, ?, ?, Now(), ?)';
+                     const values = [requestId, frrom,managerEmail, 'We regret to inform you that your request has been refused.'];
+                     await connection.query(query, values);
         await connection.query(sql);
       }
   

@@ -35,7 +35,7 @@ const upload = multer({ memoStorage });
     let downloadURL = '';
     const amount = req.body.amount;
     const requestId = req.body.id ;
-
+    const forr = req.body.forr
     try {
       const connection = await pool.getConnection();
       const [service] = await connection.query('select service from requests where id = ?' , [requestId])
@@ -47,7 +47,9 @@ const upload = multer({ memoStorage });
       await connection.query('UPDATE services SET amount = ? WHERE id = ?', [(currentServiceResult[0].amount - amount), service[0].service ]);
       await connection.query("INSERT INTO transactions (amount, image_url, createdAt ,requests ,service_id ,service_title ,type) VALUES (?, ?, NOW(), ? ,? ,? ,'request')", [amount*-1, downloadURL ,requestId ,service[0].service  ,currentServiceResult[0].title]); 
       await connection.query('UPDATE requests SET accountant_review =  ? , status = ? , completedAt = NOW()  WHERE id = ?', ['approved' ,'completed' , requestId]);
-
+      const query = 'INSERT INTO notifications (request_id, forr, frrom, time, text) VALUES (?, ?, ?, Now(), ?)';
+      const values = [requestId, forr,'', 'We are pleased to inform you that your request has been approved.'];
+      await connection.query(query, values);
       await connection.commit();
       connection.release();
       res.status(201).json({ message: "transaction created successfully" });
@@ -71,7 +73,7 @@ const upload = multer({ memoStorage });
     const requestId = req.body.id;
     const managerReview = req.body.review;
     const managerEmail = req.body.email; // Assuming the manager's email is provided in the request body
-  
+    const forr = req.body.forr
     try {
       // Acquire a connection from the pool
       const connection = await pool.getConnection();
@@ -91,7 +93,9 @@ const upload = multer({ memoStorage });
         const sql = `UPDATE requests
                      SET accountant_review = 'rejected', status = 'rejected', reviewedByAccountantAt = NOW(), completedAt = NOW(), accountant_motif = '${managerMotif}'
                      WHERE id = ${requestId}`;
-  
+                     const query = 'INSERT INTO notifications (request_id, forr, frrom, time, text) VALUES (?, ?, ?, Now(), ?)';
+                     const values = [requestId, forr,'', 'We regret to inform you that your request has been refused.'];
+                     await connection.query(query, values);
         await connection.query(sql);
       }
   
