@@ -120,6 +120,26 @@ console.log(originalNotifications) ;
 
 
 
+router.get('/notifications', async (req, res) => {
+  try {
+    const { forr } = req.query;
+
+    // Get a connection from the connection pool
+    const connection = await pool.getConnection();
+
+    // Perform the SELECT query
+    const query = 'SELECT * FROM notifications WHERE forr = ? ORDER BY time DESC LIMIT 10';
+    const [rows] = await connection.query(query, [forr]);
+
+    // Release the connection back to the pool
+    connection.release();
+
+    res.status(200).json(rows);
+  } catch (error) {
+    console.error('Error retrieving notifications:', error);
+    res.status(500).send('An error occurred');
+  }
+});
 
 
 
