@@ -13,8 +13,8 @@ const pool = require('../db')
   const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
-      user: "socialBenefitsSba@gmail.com",
-      pass: "xjpsrmrcnovsqtcg",
+      user: "esi4benefits@gmail.com",
+      pass: "awplybxdgiwpnxik",
     },
   });
   
