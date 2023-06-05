@@ -90,7 +90,7 @@ const pool = require('../db')
     console.log(req.body)
     try {
         const connection = await pool.getConnection();
-        const query = 'INSERT INTO benefits (title,  description, coverage, needed_proofs ,service) VALUES (?, ?, ?, ? ,?)';
+        const query = 'INSERT INTO benefits (benefit_title,  description, coverage, needed_proofs ,service) VALUES (?, ?, ?, ? ,?)';
         const values = [title, description, coverage, needed_proofs ,service];
         const [result] = await connection.execute(query, values);
         connection.release();
