@@ -40,7 +40,7 @@ const pool = require('../db')
       const token = await generateResetToken(email);
   
       const mailOptions = {
-        from: "socialBenefitsSba@gmail.com",
+        from: "esi4benefits@gmail.com",
         to: email,
         subject: "Reset Your Password",
         text: `Click this link to reset your password: http://localhost:3000/resetPassword?token=${token}&email=${email}`,
