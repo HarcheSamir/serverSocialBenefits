@@ -85,20 +85,36 @@ const pool = require('../db')
 
 
 
-  router.post('/addSocialBenefit', upload.none() ,async (req, res) => {
+  router.post('/addSocialBenefit', upload.single("pic"),async (req, res) => {
     const { title,  description, coverage, needed_proofs , service } = req.body;
     console.log(req.body)
+    const file = req.file;
+    const ext = file.originalname.split('.').pop();
+  const fileName = `${uuidv4()}.${ext}`;
+    const imageRef = ref(storage, fileName);
+    const metatype = { contentType: file.mimetype, name: fileName };
+    let downloadURL='';
     try {
-        const connection = await pool.getConnection();
-        const query = 'INSERT INTO benefits (benefit_title,  description, coverage, needed_proofs ,service) VALUES (?, ?, ?, ? ,?)';
-        const values = [title, description, coverage, needed_proofs ,service];
+      const connection = await pool.getConnection();
+      await connection.beginTransaction();
+      await uploadBytes(imageRef, file.buffer, metatype) ;
+      downloadURL = await getDownloadURL(imageRef);
+         const query = 'INSERT INTO benefits (benefit_title,  description, coverage, needed_proofs ,service ,imageUrl) VALUES (?, ?, ?, ? ,? ,?)';
+        const values = [title, description, coverage, needed_proofs ,service , downloadURL];
         const [result] = await connection.execute(query, values);
+        await connection.commit();
         connection.release();
-        res.status(200).send({ message: 'Row added successfully!' });
+        res.status(201).json({ message:"program created successfully" });
     } catch (error) {
-        console.log(error);
-        res.status(500).send({ error: 'An error occurred while adding a row to the benefits table.' });
-    }
+      const connection = await pool.getConnection(); 
+      await connection.rollback();
+
+    
+      const imageRef = ref(storage,downloadURL);
+      await deleteObject(imageRef);
+      connection.release();
+      res.status(500).json({ message: "Failed to create announcement" });
+     }
 });
 
 

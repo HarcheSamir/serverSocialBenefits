@@ -43,7 +43,7 @@ const pool = require('../db')
         from: "esi4benefits@gmail.com",
         to: email,
         subject: "Reset Your Password",
-        text: `Click this link to reset your password: http://localhost:3000/resetPassword?token=${token}&email=${email}`,
+        text: `Click this link to reset your password: http://localhost:3000/ResetPassword?token=${token}&email=${email}`,
       };
   
       await transporter.sendMail(mailOptions);
