@@ -34,24 +34,34 @@ const pool = require('../db')
     }
   }
   
-  router.post("/forgotPassword", async (req, res) => {
+  router.post('/forgotPassword', async (req, res) => {
     try {
       const { email } = req.body;
+  
+      const connection = await pool.getConnection();
+      const [rows] = await connection.execute('SELECT email FROM accounts WHERE email = ?', [email]);
+      connection.release();
+  
+      if (rows.length === 0) {
+        // Email does not exist in the accounts table
+        return res.status(400).json({ error: 'Email address not found. Please check the entered email and try again.' });
+      }
+  
       const token = await generateResetToken(email);
   
       const mailOptions = {
-        from: "esi4benefits@gmail.com",
+        from: 'esi4benefits@gmail.com',
         to: email,
-        subject: "Reset Your Password",
+        subject: 'Reset Your Password',
         text: `Click this link to reset your password: http://localhost:3000/ResetPassword?token=${token}&email=${email}`,
       };
   
       await transporter.sendMail(mailOptions);
   
-      res.status(200).json({ message: "Password reset email sent." });
+      res.status(200).json({ message: 'Password reset email sent.' });
     } catch (err) {
       console.error(err);
-      res.status(500).json({ error: "Server error" });
+      res.status(500).json({ error: 'Server error' });
     }
   });
   
