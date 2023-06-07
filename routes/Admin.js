@@ -164,6 +164,35 @@ router.get('/socialBenefits', async (req, res) => {
 });
 
 
+
+router.get('/socialBenefits2', async (req, res) => {
+  try {
+    const {  title ,benefit_id } = req.query;
+    const connection = await pool.getConnection();
+
+    let query = 'SELECT b.*, s.* FROM benefits AS b LEFT JOIN services AS s ON b.service = s.id WHERE b.expired = "no"';
+
+    let conditions = [];
+    if (benefit_id) conditions.push(`benefit_id = '${benefit_id}'`);
+    if (title) conditions.push(`title = '${title}'`);
+
+    if (conditions.length > 0) {
+      query += ' WHERE ' + conditions.join(' AND ');
+    }
+
+    const [rows] = await connection.query(query);
+
+    connection.release();
+
+    res.status(200).json(rows);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Internal server error');
+  }
+});
+
+
+
 router.post("/uploadAnnouncement", upload.single("pic"), async (req, res) => {
   const file = req.file;
   const ext = file.originalname.split('.').pop();
@@ -221,6 +250,27 @@ router.get('/getBudget', async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
+
+
+
+
+router.post('/setExpired/:benefitId', async (req, res) => {
+  const { benefitId } = req.params;
+  const { expired } = req.body;
+
+  try {
+    const connection = await pool.getConnection();
+    const updateQuery = 'UPDATE benefits SET expired = ? WHERE benefit_id = ?';
+    await connection.query(updateQuery, [expired, benefitId]);
+    connection.release();
+
+    res.status(200).json({ message: 'Expiration status updated successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to update expiration status' });
+  }
+});
+
 
 
 
