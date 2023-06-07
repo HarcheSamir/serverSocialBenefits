@@ -381,7 +381,43 @@ router.get('/transactions', async (req, res) => {
 
 
 
+router.post("/budgetTransaction", upload.single("pic"), async (req, res) => {
+  const file = req.file;
+  const ext = file.originalname.split('.').pop();
+  const fileName = `${uuidv4()}.${ext}`;
+  const imageRef = ref(storage, fileName);
+  const metatype = { contentType: file.mimetype, name: fileName };
+  let downloadURL = '';
+  const amount = req.body.amount;
+   const budgetId = 1;
+  try {
+    const connection = await pool.getConnection();
+    await connection.beginTransaction();
+    await uploadBytes(imageRef, file.buffer, metatype);
+    downloadURL = await getDownloadURL(imageRef);
+    const selectQuery = 'SELECT amount FROM budget WHERE id = ? FOR UPDATE';
+    const [row] = await connection.query(selectQuery, [budgetId]);
 
+    // Calculate the new amount by adding the provided amount
+    const currentAmount = row[0].amount;
+    const newAmount = currentAmount + parseInt(amount);
+
+    // Update the row with the new amount
+    const updateQuery = 'UPDATE budget SET amount = ? WHERE id = ?';
+    await connection.query(updateQuery, [newAmount, budgetId]);
+   await connection.query("INSERT INTO transactions (amount, image_url, createdAt  ,type) VALUES (?, ?, NOW(),'crate')", [amount, downloadURL]); 
+    await connection.commit();
+    connection.release();
+    res.status(201).json({ message: "Additional funds allocated successfully" });
+  } catch (error) {
+    const connection = await pool.getConnection();
+    await connection.rollback();
+    const imageRef = ref(storage, downloadURL);
+    await deleteObject(imageRef);
+    connection.release();
+    res.status(500).json({ message: "Failed to create transaction" });
+  }
+});
 
 
 
