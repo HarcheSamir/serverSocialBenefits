@@ -125,7 +125,19 @@ const pool = require('../db')
     }
   });
 
-
+  router.get("/accounts2", async (req, res) => {
+    try {
+      const connection = await pool.getConnection();
+      const query = 'SELECT * FROM accounts WHERE debt <> 0';
+      const [rows] = await connection.query(query);
+      connection.release();
+  
+      res.status(200).json({ accounts: rows });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch accounts" });
+    }
+  });
+  
   router.post('/reviewRequest', async (req, res) => {
     const requestId = req.body.id;
     const managerReview = req.body.review;

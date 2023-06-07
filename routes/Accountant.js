@@ -39,7 +39,15 @@ const upload = multer({ memoStorage });
     try {
       const connection = await pool.getConnection();
       const [service] = await connection.query('select service from requests where id = ?' , [requestId])
+      const [account] = await connection.query('select requestedBy from requests where id = ?' , [requestId])
+
       const [currentServiceResult] = await connection.query('SELECT * FROM services WHERE id = ?', [service[0].service]);
+     
+      if (service[0].service === 7) {
+        // Increase the value of "debt" column in "accounts" table
+        await connection.query('UPDATE accounts SET debt = debt + ? WHERE email = ?', [parseInt(amount), account[0].requestedBy]);
+      }
+
       if (currentServiceResult[0].amount - amount < 0 ){      return res.status(400).json({ error: 'Insufficient budget. Please choose a lower amount.' });      }
       await connection.beginTransaction();
       await uploadBytes(imageRef, file.buffer, metatype);
@@ -421,7 +429,54 @@ router.post("/budgetTransaction", upload.single("pic"), async (req, res) => {
 
 
 
+router.post("/debtTransaction", upload.single("pic"), async (req, res) => {
+  const file = req.file;
+  const ext = file.originalname.split('.').pop();
+  const fileName = `${uuidv4()}.${ext}`;
+  const imageRef = ref(storage, fileName);
+  const metatype = { contentType: file.mimetype, name: fileName };
+  let downloadURL = '';
+  const amount = req.body.amount;
+  const id = req.body.id ;
+   const budgetId = 1;
+  try {
+    const connection = await pool.getConnection();
+    await connection.beginTransaction();
+    await uploadBytes(imageRef, file.buffer, metatype);
+    downloadURL = await getDownloadURL(imageRef);
+    const selectDebtQuery = 'SELECT debt FROM accounts WHERE email = ?';
+    const [debtRow] = await connection.query(selectDebtQuery, [id]);
+    const currentDebt = debtRow[0].debt;
 
+    // Calculate the new debt by subtracting the provided amount
+    let newDebt = currentDebt - parseInt(amount);
+    newDebt = newDebt < 0 ? 0 : newDebt;
+
+    const updateDebtQuery = 'UPDATE accounts SET debt = ? WHERE email = ?';
+    await connection.query(updateDebtQuery, [newDebt, id]);
+    const selectQuery = 'SELECT amount FROM budget WHERE id = ? FOR UPDATE';
+    const [row] = await connection.query(selectQuery, [budgetId]);
+
+    // Calculate the new amount by adding the provided amount
+    const currentAmount = row[0].amount;
+    const newAmount = currentAmount + parseInt(amount);
+
+    // Update the row with the new amount
+    const updateQuery = 'UPDATE budget SET amount = ? WHERE id = ?';
+    await connection.query(updateQuery, [newAmount, budgetId]);
+   await connection.query("INSERT INTO transactions (amount, image_url, createdAt  ,type) VALUES (?, ?, NOW(),'crate')", [amount, downloadURL]); 
+    await connection.commit();
+    connection.release();
+    res.status(201).json({ message: "Additional funds allocated successfully" });
+  } catch (error) {
+    const connection = await pool.getConnection();
+    await connection.rollback();
+    const imageRef = ref(storage, downloadURL);
+    await deleteObject(imageRef);
+    connection.release();
+    res.status(500).json({ message: "Failed to create transaction" });
+  }
+});
 
 
 module.exports = router;
