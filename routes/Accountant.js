@@ -46,7 +46,7 @@ const upload = multer({ memoStorage });
       downloadURL = await getDownloadURL(imageRef);
       await connection.query('UPDATE services SET amount = ? WHERE id = ?', [(currentServiceResult[0].amount - amount), service[0].service ]);
       await connection.query("INSERT INTO transactions (amount, image_url, createdAt ,requests ,service_id ,service_title ,type) VALUES (?, ?, NOW(), ? ,? ,? ,'request')", [amount*-1, downloadURL ,requestId ,service[0].service  ,currentServiceResult[0].title]); 
-      await connection.query('UPDATE requests SET accountant_review =  ? , status = ? , completedAt = NOW()  WHERE id = ?', ['approved' ,'completed' , requestId]);
+      await connection.query('UPDATE requests SET accountant_review =  ? , status = ? , reviewedByAccountantAt = NOW(), completedAt = NOW()  WHERE id = ?', ['approved' ,'completed' , requestId]);
       const query = 'INSERT INTO notifications (request_id, forr, frrom, time, text) VALUES (?, ?, ?, Now(), ?)';
       const values = [requestId, forr,'', 'We are pleased to inform you that your request has been approved.'];
       await connection.query(query, values);
